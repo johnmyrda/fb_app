@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en-US'>
+<html>
+<head>
+        <meta charset='utf-8'>
+        <title>Find Free Friends</title>
+		<link href='http://fonts.googleapis.com/css?family=Roboto:100,400,700' rel='stylesheet' type='text/css'>		
+        <link rel='stylesheet' type='text/css' href='css/stylesheet.css'>
+		<link rel='stylesheet' type='text/css' href='css/app.css'>		
+		<link rel='stylesheet' type='text/css' href='css/auth-buttons-fb.css'>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="http://www.parsecdn.com/js/parse-1.3.0.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js"></script>
+		<script type="text/javascript" src='js/jquery.elastic.min.js'></script>
+        <script type="text/javascript" src='js/keys.js'></script>
+		<script type="text/javascript" src='js/scripts.js'></script>
+        <script src="//connect.facebook.net/en_US/sdk.js"></script>        
+</head>
+
+<body>
+<div id="fb-root"></div>
+	<div id="global_container">
+        <div id="header">
+            <div class="content_container">
+            </div>
+        </div>
+        <div id="main">
+            <div class="content_container">
+            </div>
+        </div>	
+        <div id="footer">
+            <div class="content_container">
+            <p id="copyright">&copy 2014 John Myrda</p>
+            </div>
+        </div>
+	</div>
+</body>
+
+<!-- Templates -->
+    <script type="text/template" id="login-header-template">
+		<div id="app_logo" class="glue_text">Find Free Friends</div>
+		<a id="loginButton" class="btn-auth btn-facebook" value="Login!" href="#">
+			Sign in with <b>Facebook</b>
+		</a>
+    </script>
+
+    <script type="text/template" id="login-main-template">
+        <div id="main_left">
+            This is where a graphic of the app could go. Maybe a picture of the mobile version? (Although I'd need to write that first.)
+        </div>
+        <div id="main_right">
+            <h1>Get Together!</h1>
+            <p>Find Free Friends is a Facebook application that allows you to see if your friends want to socialize. Once you and your friends start using Find Free Friends, the awkward shuffle of texting, calling, and messaging people to see who wants to hang will be over! Instantly see who wants to chillax with Find Free Friends.</p>
+        </div>    
+    </script>
+
+
+    <script type="text/template" id="app-header-template">
+		<div id="app_logo" class="glue_text">Find Free Friends</div>
+		<a id="logoutButton" class="btn-auth btn-facebook" value="Logout!" href="#">
+			Log Out
+		</a>
+    </script>
+    
+    <script type="text/template" id="app-main-template">
+            <div id="status_update">
+                <div id="hours_selector">
+               
+                </div>
+                <!--textbox for entering desired activity-->
+                <div id="desired_activity">
+                    <textarea class="defaultText" id="desired_activity_textarea" placeholder="What do you want to do with your free time? Leave this blank if you're up for whatever." maxlength="160"></textarea>
+                </div>
+                
+                <button type="button" id="bored_button" class="app_buttons">Join the crowd!</button>
+            </div>
+            <div id="message_feed"></div>
+    </script>
+
+    
+    <script type="text/template" id="hours_selector-template">
+        <div class="glue_text">I'm free for</div>    
+        
+        <button type="button" class="plusMinusButtons app_buttons" id="minus_button">-</button>
+        <div id="hoursFree" class="glue_text"><%= hoursFree %></div>
+        <button type="button" class="plusMinusButtons app_buttons" id="plus_button">+</button>
+        
+        <div class="glue_text">hour<%= hoursFree === 1 ? "" : "s" %> and want to</div>     
+    </script>
+    
+    <script type="text/template" id="message_feed-status-template">
+            <a href="https://facebook.com/<%=fb_id%>" target="_blank">
+                <img class="profile_picture" src="http://graph.facebook.com/<%=fb_id%>/picture?type=square" title="<%=fb_name%>">
+            </a>
+            <a href="https://facebook.com/<%=fb_id%>" target="_blank"><%=fb_name%></a> said "I<%= desiredActivity === "" ? "'m up for whatever\"." : " want to " + desiredActivity + "\"."%>
+            <br>
+            <a href="https://facebook.com/messages/<%=fb_id%>" target="_blank">Chat</a> with <%=fb_firstName%>! 
+    </script>

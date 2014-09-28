@@ -1,0 +1,135 @@
+#findFreeFriends{
+}
+
+.glue_text{
+	font-family: Roboto;
+	font-size: 40px;
+	font-style: normal;
+	font-weight: 200;
+	line-height: 44px;
+	text-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
+}
+
+#hours_selector{
+}
+
+#hoursFree{
+	display: inline-block;
+	min-width: 2em;
+	font-weight: 700;
+	padding-right: 20px;
+	padding-left: 20px;
+}
+
+.plusMinusButtons{
+	height: 30px;
+	width: 30px;
+}
+
+.plus_minus_buttons:hover{
+	background-color:#D0D0D0;
+}
+
+#desired_activity{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+#desired_activity_textarea{
+	width: 280px;
+	height: 50px;
+	text-align: left;
+	resize: none;
+}
+
+.defaultText {
+	width: 300px; 
+}
+
+.defaultTextActive {
+	color: #a1a1a1;
+	font-style: italic; 
+}
+
+::-webkit-input-placeholder {
+	color: #a1a1a1;
+	font-style: italic; 
+}
+
+:-moz-placeholder { /* Firefox 18- */
+	color: #a1a1a1;
+	font-style: italic;  
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+	color: #a1a1a1;
+	font-style: italic; 
+}
+
+:-ms-input-placeholder {  
+	color: #a1a1a1;
+	font-style: italic;  
+}
+
+
+.top_right {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+#bored_button{
+	width: 280px;
+	height: 50px;
+}
+
+.app_buttons{
+	background-color: #C0C0C0;
+	box-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	border: 1px solid #888888;
+	display: inline-block;
+	padding: 0px;
+	font-weight: 900;
+	font-size: 24px;
+}
+
+.app_buttons:hover{
+	background-color:#D8D8D8;
+}
+
+.app_buttons:active{
+	position: relative;
+	top: 1px;
+	left: 1px;
+	box-shadow: none;
+}
+
+.user-status{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	text-align: justify;
+	display: block;
+	width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.user-status a:link{
+	color: #3b5998;
+}
+
+.user-status a:visited{
+	color: #3b5998;
+}
+
+.user-status a:hover{
+	text-decoration: underline;
+}
+
+.profile_picture{
+	float: left;
+	padding-right: 10px;
+}

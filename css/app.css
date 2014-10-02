@@ -1,7 +1,11 @@
 #findFreeFriends{
 }
 
-.glue_text{
+#status-update{
+    padding-bottom: 20px;
+}
+
+.glue-text{
 	font-family: Roboto;
 	font-size: 40px;
 	font-style: normal;
@@ -26,16 +30,14 @@
 	width: 30px;
 }
 
-.plus_minus_buttons:hover{
-	background-color:#D0D0D0;
-}
-
-#desired_activity{
+#desired-activity{
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
 
-#desired_activity_textarea{
+#desired-activity-textarea{
+    font-size: 14px;
+    padding: 7px 3px;
 	width: 280px;
 	height: 50px;
 	text-align: left;
@@ -79,11 +81,11 @@
 }
 
 #bored_button{
-	width: 280px;
+	width: 296px;
 	height: 50px;
 }
 
-.app_buttons{
+.app-buttons{
 	background-color: #C0C0C0;
 	box-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
 	-moz-border-radius: 6px;
@@ -96,11 +98,11 @@
 	font-size: 24px;
 }
 
-.app_buttons:hover{
+.app-buttons:hover{
 	background-color:#D8D8D8;
 }
 
-.app_buttons:active{
+.app-buttons:active{
 	position: relative;
 	top: 1px;
 	left: 1px;
@@ -108,13 +110,16 @@
 }
 
 .user-status{
-	padding-top: 10px;
-	padding-bottom: 10px;
+    margin: 6px;
+	padding: 6px;
 	text-align: justify;
 	display: block;
 	width: 280px;
     margin-left: auto;
     margin-right: auto;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid #d0d1d5;
 }
 
 .user-status a:link{
@@ -127,6 +132,15 @@
 
 .user-status a:hover{
 	text-decoration: underline;
+}
+
+.user-status-timestamp{
+    float: right;
+    font-size: 12px;
+}
+
+.user-status-timestamp-expired{
+    color: #A0A0A0;
 }
 
 .profile_picture{

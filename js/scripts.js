@@ -1,13 +1,10 @@
 $(function() {
 
-    //Grab app keys from seperate files
-    $.getScript("js/keys.js");
-
     //Initialize Parse App with JavaScript keys
     Parse.initialize(parseKeys.appId, parseKeys.jsKey);
 
     //Utility Functions
-    
+
     //HTML Escaping Function from https://github.com/janl/mustache.js
     //License used by mustache.js is below:
     /*The MIT License
@@ -30,175 +27,160 @@ $(function() {
     };
 
     function escapeHtml(string) {
-        return String(string).replace(/[&<>"'\/]/g, function (s) {
+        return String(string).replace(/[&<>"'\/]/g, function(s) {
             return entityMap[s];
         });
     }
-    
+
     //Backbone/Parse Structure
     //Models
-    
-    var UserInfoModel = Parse.Object.extend("UserInfo",{
+
+    var ClockModel = Parse.Object.extend("Clock", {
+        initialize: function() {
+            var self = this;
+            self.set("time", new Date());
+            Parse.Cloud.run("getServerTime", {}, {
+                success: function(response) {
+                    self.set("time", response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+            this.startClock(60000);
+        },
+
+        startClock: function(interval) {
+            var self = this;
+            setInterval(function() {
+                self.set("time", new Date(self.get("time").getTime() + interval));
+            }, interval);
+        }
+    });
+
+    var UserInfoModel = Parse.Object.extend("UserInfo", {
         defaults: {
             desiredActivity: "",
             hoursFree: 2
         },
+
         setDefaults: function() {
-            if(!this.has("desiredActivity")){
+            //console.log(this);
+            if (!this.has("desiredActivity") || !this.has("hoursFree")) {
                 this.set("hoursFree", this.defaults.hoursFree);
             }
+        },
+
+        getExpirationTime: function() {
+            var expirationDate = new Date(this.get("statusUpdatedAt").getTime() + this.get("hoursFree") * 60 * 60 * 1000);
+            return expirationDate;
         }
     });
-    
-    var UserStatus = Parse.Object.extend("UserStatus",{
-    // Default attributes for the User.
-    defaults: {
-      desiredActivity: "",
-      hoursFree: 2
-    },
 
-    initialize: function() {
-      if (Parse.User.current().has("hoursFree")) {
-        this.set("hoursFree", Parse.User.current().get("hoursFree"));
-      }
-      this.fb_sync();
-    },
-    //update function will take whatever the current state of the model is and upload it to the server
-    upload: function( options ) {
-        console.log(this.toJSON());
-        Parse.User.current().save(this.toJSON(), {
-            success: function(current_user) {
-                if(_.has(options, "success")){
-                    options.success();
-                }
-            // the object saved successfully
-            },
-            error: function(current_user, error) {
-                console.log(error);
-                if(_.has(options, "error")){
-                    options.error(error);
-                }
-            //the save failed.
-            //error is a Parse.Error with an error code
-            }
-        });
-    },
-    //sync function will download the most recent version of the model from the server based on timestamps
-    sync: function () {},
-    fb_sync: function( ) {
-        FB.api("/me?fields=id,first_name,name", function(response){
-            if(response){
-                fb_data = {fb_id: response.id, fb_name: response.name, fb_firstname: response.first_name};
-                //Parse.User.current().set(fb_data);
-                Parse.User.current().save(fb_data, {
-                    success: function(current_user) {
-                        //if(_.has(options, "success")){
-                        //    options.success();
-                        //}
-                    // the object saved successfully
-                    },
-                    error: function(current_user, error) {
-                        console.log(error);
-                        //if(_.has(options, "error")){
-                        //    options.error(error);
-                        //}
-                    //the save failed.
-                    //error is a Parse.Error with an error code
-                    }
-                });
-            }else{
-                console.log(response.error);
-            }
-        });
-    }
-  });
-  
-    
     //Collections
 
+    //collection of statuses from fb friends - includes self
     var FriendStatuses = Parse.Collection.extend({
         model: UserInfoModel,
+
+        comparator: function(model) {
+            return (-1 * model.get("statusUpdatedAt").getTime());
+        },
+
         initialize: function() {
             var self = this;
-            FB.api("/me/friends?fields=id", function(response){
-                if(response.data){
+            this.clock = new ClockModel();
+            FB.api("/me/friends?fields=id", function(response) {
+                if (response.data) {
                     var fb_friend_ids = []
                     $.each(response.data, function(index, friend) {
                         fb_friend_ids.push(friend.id);
                     });
-                    fb_friend_ids.push(Parse.User.current().get("fb_id"));
+                    fb_friend_ids.push(Parse.User.current().get("authData").facebook.id);
                     self.query = new Parse.Query(UserInfoModel);
                     self.query.exists("desiredActivity");
                     self.query.containedIn("fb_id", fb_friend_ids);
                     self.fetch({});
                     //console.log(self);
-                }else{
+                } else {
                     console.log(response.error);
                 }
             });
         }
     });
-    
+
     //Views
-  var LogInView = Parse.View.extend({
-    events: {
-      "click #loginButton": "logIn"
-    },
+    var LogInView = Parse.View.extend({
+        events: {
+            "click #loginButton": "logIn"
+        },
 
-    el: "#global_container",
-    
-    initialize: function() {
-      _.bindAll(this, "logIn");
-      this.render();
-    },
+        el: "#global_container",
 
-    logIn: function() {
-        self = this;
-        Parse.FacebookUtils.logIn( "user_friends", {
-            success: function(user) {
-                new MainView();
-                self.undelegateEvents();
-                delete self;               
-            },
-            error: function(user, error){
-                console.log("User cancelled the Facebook login or did not fully authorize.");
-            }
-        });
+        initialize: function() {
+            _.bindAll(this, "logIn");
+            this.render();
+        },
 
-        return false;
-    },
+        logIn: function() {
+            self = this;
+            Parse.FacebookUtils.logIn("user_friends", {
+                success: function(user) {
+                    Parse.User.current().save().then(function() {
+                        return Parse.Cloud.run("initUser", {});
+                    }).then(function() {
+                        return Parse.User.current().fetch({});
+                    }).then(function() {
+                        new MainView();
+                        self.undelegateEvents();
+                        delete self;
+                        return;
+                    }, function(error) {
+                        console.log(error);
+                    });
+                },
+                error: function(user, error) {
+                    console.log("User cancelled the Facebook login or did not fully authorize.");
+                }
+            });
 
-    render: function() {
-      $("#header .content_container").html(_.template($("#login-header-template").html()));
-      $("#main .content_container").html(_.template($("#login-main-template").html()));
-      //this.delegateEvents();
-    }
-  });
+            return false;
+        },
+
+        render: function() {
+            $("#header .content_container").html(_.template($("#login-header-template").html()));
+            $("#main .content_container").html(_.template($("#login-main-template").html()));
+            //this.delegateEvents();
+        }
+    });
 
     var statusUpdateView = Parse.View.extend({
         events: {
             "click .plusMinusButtons": "alterFreeTime",
             "click #bored_button": "saveStatus",
-            "keypress #desired_activity_textarea": "updateOnEnter",
-            "blur #desired_activity_textarea": "cacheStatus"
+            "keypress #desired-activity-textarea": "updateOnEnter",
+            "blur #desired-activity-textarea": "cacheStatus"
         },
-        
+
         template: _.template($("#app-main-template").html()),
         subtemplate: _.template($("#hours_selector-template").html()),
-        
+
         id: "findFreeFriends",
-        
+
         initialize: function() {
+            this.model.setDefaults();
             this.render();
-            this.message_feed = new messageFeedView({collection: this.collection});            
+            this.message_feed = new messageFeedView({
+                collection: this.collection
+            });
             this.model.on("change:hoursFree", this.renderHoursSelector, this);
         },
-        
+
         // If you hit `enter`, upload the status.
         updateOnEnter: function(e) {
             if (e.keyCode == 13) {
-                if(e.shiftKey === false){
-                    if(this.$("#bored_button").is(":disabled")){
+                if (e.shiftKey === false) {
+                    if (this.$("#bored_button").is(":disabled")) {
                         return false;
                     }
                     this.saveStatus();
@@ -206,11 +188,11 @@ $(function() {
                 }
             }
         },
-        
-        cacheStatus: function(){
-            this.model.set("desiredActivity", $("#desired_activity_textarea").val());
+
+        cacheStatus: function() {
+            this.model.set("desiredActivity", $("#desired-activity-textarea").val());
         },
-        
+
         saveStatus: function() {
             this.cacheStatus();
             self = this;
@@ -220,12 +202,12 @@ $(function() {
                     self.$("#bored_button").removeAttr("disabled");
                     self.collection.fetch({});
                 },
-                error : function (error){
+                error: function(error) {
                     self.$("#bored_button").removeAttr("disabled");
                 }
             });
         },
-        
+
         alterFreeTime: function(event) {
             //function specific
             var lower_bound = .5;
@@ -233,12 +215,12 @@ $(function() {
             var increment = .5;
             //user data to be modified
             var currentHoursFree = Number(this.model.get("hoursFree"));
-            
+
             var button_id = event.currentTarget.id;
-            if(button_id === "plus_button"){
+            if (button_id === "plus_button") {
                 this.model.set("hoursFree", Math.min(upper_bound, (currentHoursFree + increment)));
             }
-            if(button_id === "minus_button"){
+            if (button_id === "minus_button") {
                 this.model.set("hoursFree", Math.max(lower_bound, (currentHoursFree - increment)));
             }
         },
@@ -246,117 +228,150 @@ $(function() {
         render: function() {
             $(this.el).html(this.template());
             $("#main .content_container").html(this.el);
-            $("#desired_activity_textarea").elastic();
+            $("#desired-activity-textarea").elastic();
             $("#hours_selector").html(this.subtemplate(this.model.toJSON()));
         },
-        
+
         renderHoursSelector: function() {
             $("#hours_selector").html(this.subtemplate(this.model.toJSON()));
         }
     });
-    
+
     var statusView = Parse.View.extend({
-    
+
         template: _.template($("#message_feed-status-template").html()),
-        
+
         events: {},
-        
+
         className: "user-status",
-        
-        intialize: function() {
+
+        intialize: function() {},
+
+        getTimestampHTML: function() {
+            var timestamp = "";
+            var timestampTitle = "";
+            var classes = "user-status-timestamp";
+            var expirationTime = this.model.getExpirationTime();
+            var now = this.model.collection.clock.get("time");
+            var timeFree_ms = expirationTime - now;
+            if (timeFree_ms <= 0) {
+                this.modelJSON['fb_chatLink'] = false;
+                classes += " user-status-timestamp-expired";
+                timestamp = "expired";
+                timestampTitle = ("expired on " + expirationTime.toLocaleString());
+            } else {
+                var freeHours = parseInt(timeFree_ms / (1000 * 60 * 60) % 24);
+                var freeMinutes = parseInt(timeFree_ms / (1000 * 60) % 60);
+                //building text for timestamp
+                timestamp = freeHours + ":" + (freeMinutes < 10 ? "0" : "") + freeMinutes;
+
+                //building title text for timestamp
+                timestampTitle = "free for ";
+                if (freeHours > 0) {
+                    //hoursFree === 1 ? "" : "s"
+                    timestampTitle += (freeHours + " hour" + (freeHours === 1 ? "" : "s") + " and ");
+                }
+                if (freeMinutes > 0 || (freeMinutes === 0 && freeHours > 0)) {
+                    timestampTitle += (freeMinutes + " minute" + (freeMinutes === 1 ? "" : "s"))
+                } else {
+                    timestampTitle += "less than a minute";
+                }
+            }
+            var template = _.template('<div class="<%= classes %>" title="<%= timestampTitle %>"><%= timestamp %></div>');
+            return template({
+                "timestamp": timestamp,
+                "timestampTitle": timestampTitle,
+                "classes": classes
+            });
         },
-        
+
         render: function() {
-            modelJSON = this.model.toJSON();
-            modelJSON["desiredActivity"] = escapeHtml(modelJSON["desiredActivity"]);
-            $(this.el).html(this.template(modelJSON));
+            this.modelJSON = this.model.toJSON();
+            this.modelJSON["fb_chatLink"] = true;
+            this.modelJSON["timestampHTML"] = this.getTimestampHTML();
+            this.modelJSON["desiredActivity"] = escapeHtml(this.modelJSON["desiredActivity"]);
+            if (Parse.User.current().get("authData").facebook.id === this.modelJSON["fb_id"]) {
+                this.modelJSON["fb_chatLink"] = false;
+                this.modelJSON["fb_name"] = "You";
+            }
+            //console.log(modelJSON);
+            $(this.el).html(this.template(this.modelJSON));
             return this.el;
         }
     });
-    
+
     var messageFeedView = Parse.View.extend({
         events: {
-            
+
         },
-        
+
         el: $("#message_feed"),
-        
+
         initialize: function() {
-            //console.log(this.collection.length);
-            this.refreshFeed();
-            this.collection.on("reset", this.refreshFeed, this);
+            this.render();
+            this.collection.on("reset", this.render, this);
+            this.collection.clock.on("change:time", this.render, this);
         },
         //functions
-        render: function(){
-            console.log("messageFeedView Rendered");
-        },
-        
-        refreshFeed: function() {
-            //console.log("refreshFeed");
-            //console.log(this);
+        render: function() {
             $("#message_feed").html("");
             this.collection.each(this.addOne);
         },
-        
+
         addOne: function(user) {
-            var view = new statusView({model: user});
+            var view = new statusView({
+                model: user
+            });
             this.$("#message_feed").append(view.render());
         }
     });
 
-    
+
     var MainView = Parse.View.extend({
         events: {
             "click #logoutButton": "logOut"
         },
-    
+
         el: "#global_container",
-        
+
         initialize: function() {
-            self = this;
-            Parse.Cloud.run("initUser", {}, {
-                success: function(UserInfo) {
-                    UserInfo.fetch().then( function(stuff){
-                        UserInfo.setDefaults();
-                        self.UserInfo = UserInfo;
-                        self.friendStatuses = new FriendStatuses;
-                        self.status_update = new statusUpdateView({model: self.UserInfo, collection: self.friendStatuses});
-                    });
-                },
-                error: function(error) {
-                    console.log(error);
-                }
+            var self = this;
+            this.friendStatuses = new FriendStatuses;
+            this.UserInfo = Parse.User.current().get("UserInfo");
+            this.UserInfo.fetch({}).then(function() {
+                self.status_update = new statusUpdateView({
+                    model: self.UserInfo,
+                    collection: self.friendStatuses
+                });
             });
-            self.render();
+            this.render();
         },
-    
+
         logOut: function() {
             Parse.User.logOut();
             new LogInView();
             this.undelegateEvents();
             delete this;
         },
-    
+
         render: function() {
             $("#header .content_container").html(_.template($("#app-header-template").html()));
-            
             //this.delegateEvents();
         }
     });
 
     var AppView = Parse.View.extend({
-    // Instead of generating a new element, bind to the existing skeleton of
-    // the App already present in the HTML.
-    el: $("#global_container"),
+        // Instead of generating a new element, bind to the existing skeleton of
+        // the App already present in the HTML.
+        el: $("#global_container"),
 
         initialize: function() {
-            self = this;
-            //new AppUser();
-            window.fbAsyncInit = function(){
+            var self = this;
+            window.fbAsyncInit = function() {
                 Parse.FacebookUtils.init({
-                    appId      : fbKeys.appId, // App ID
-                    xfbml      : false,  // parse XFBML
-                    version    : 'v2.1'
+                    appId: fbKeys.appId, // App ID
+                    xfbml: false, // parse XFBML
+                    version: 'v2.1'
                 });
                 self.render();
             };
@@ -364,18 +379,19 @@ $(function() {
 
         render: function() {
             FB.getLoginStatus(function(response) {
-                if (response.status == "connected" && Parse.User.current()){
+                if (response.status == "connected" && Parse.User.current() && Parse.User.current().get("authData").facebook.id === response.authResponse.userID) {
                     new MainView();
                 } else {
+                    Parse.User.logOut();
                     new LogInView();
                 }
             });
         }
     });
-    
+
     //Router
-    
+    //not yet implemented - will be used when app has multiple pages
+
     //Start the App
     new AppView;
-
 });

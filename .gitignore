@@ -1,3 +1,5 @@
-#file containing application keys and ids
+#robots.txt file - don't index the dev site
 robots.txt
+
+#file containing application keys and ids
 js/keys.js

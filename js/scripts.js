@@ -1,7 +1,9 @@
 $(function() {
 
+    "use strict";
+
     //Initialize Parse App with JavaScript keys
-    Parse.initialize(parseKeys.appId, parseKeys.jsKey);
+    Parse.initialize(AppKeys.parse.appId, AppKeys.parse.jsKey);
 
     //Utility Functions
 
@@ -92,7 +94,7 @@ $(function() {
             this.clock = new ClockModel();
             FB.api("/me/friends?fields=id", function(response) {
                 if (response.data) {
-                    var fb_friend_ids = []
+                    var fb_friend_ids = [];
                     $.each(response.data, function(index, friend) {
                         fb_friend_ids.push(friend.id);
                     });
@@ -123,7 +125,7 @@ $(function() {
         },
 
         logIn: function() {
-            self = this;
+            var self = this;
             Parse.FacebookUtils.logIn("user_friends", {
                 success: function(user) {
                     Parse.User.current().save().then(function() {
@@ -133,7 +135,7 @@ $(function() {
                     }).then(function() {
                         new MainView();
                         self.undelegateEvents();
-                        delete self;
+                        //delete self; //I need to figure out how to do backbone memory management properly. This comment intentionally left long and obnoxious.
                         return;
                     }, function(error) {
                         console.log(error);
@@ -178,7 +180,7 @@ $(function() {
 
         // If you hit `enter`, upload the status.
         updateOnEnter: function(e) {
-            if (e.keyCode == 13) {
+            if (e.keyCode === 13) {
                 if (e.shiftKey === false) {
                     if (this.$("#bored_button").is(":disabled")) {
                         return false;
@@ -195,7 +197,7 @@ $(function() {
 
         saveStatus: function() {
             this.cacheStatus();
-            self = this;
+            var self = this;
             self.$("#bored_button").attr("disabled", "disabled");
             this.model.save({
                 success: function() {
@@ -210,9 +212,9 @@ $(function() {
 
         alterFreeTime: function(event) {
             //function specific
-            var lower_bound = .5;
+            var lower_bound = 0.5;
             var upper_bound = 9;
-            var increment = .5;
+            var increment = 0.5;
             //user data to be modified
             var currentHoursFree = Number(this.model.get("hoursFree"));
 
@@ -260,8 +262,8 @@ $(function() {
                 timestamp = "expired";
                 timestampTitle = ("expired on " + expirationTime.toLocaleString());
             } else {
-                var freeHours = parseInt(timeFree_ms / (1000 * 60 * 60) % 24);
-                var freeMinutes = parseInt(timeFree_ms / (1000 * 60) % 60);
+                var freeHours = parseInt(timeFree_ms / (3600000) % 24, 10);//360000 = 1000 * 60 * 60
+                var freeMinutes = parseInt(timeFree_ms / (60000) % 60, 10);//60000  = 1000 * 60
                 //building text for timestamp
                 timestamp = freeHours + ":" + (freeMinutes < 10 ? "0" : "") + freeMinutes;
 
@@ -272,7 +274,7 @@ $(function() {
                     timestampTitle += (freeHours + " hour" + (freeHours === 1 ? "" : "s") + " and ");
                 }
                 if (freeMinutes > 0 || (freeMinutes === 0 && freeHours > 0)) {
-                    timestampTitle += (freeMinutes + " minute" + (freeMinutes === 1 ? "" : "s"))
+                    timestampTitle += (freeMinutes + " minute" + (freeMinutes === 1 ? "" : "s"));
                 } else {
                     timestampTitle += "less than a minute";
                 }
@@ -322,7 +324,7 @@ $(function() {
             var view = new statusView({
                 model: user
             });
-            this.$("#message_feed").append(view.render());
+            $("#message_feed").append(view.render());
         }
     });
 
@@ -336,7 +338,7 @@ $(function() {
 
         initialize: function() {
             var self = this;
-            this.friendStatuses = new FriendStatuses;
+            this.friendStatuses = new FriendStatuses();
             this.UserInfo = Parse.User.current().get("UserInfo");
             this.UserInfo.fetch({}).then(function() {
                 self.status_update = new statusUpdateView({
@@ -351,7 +353,7 @@ $(function() {
             Parse.User.logOut();
             new LogInView();
             this.undelegateEvents();
-            delete this;
+            //delete this;//I need to figure out how to do backbone memory management properly. This comment intentionally left long and obnoxious.
         },
 
         render: function() {
@@ -369,7 +371,7 @@ $(function() {
             var self = this;
             window.fbAsyncInit = function() {
                 Parse.FacebookUtils.init({
-                    appId: fbKeys.appId, // App ID
+                    appId: AppKeys.facebook.appId, // App ID
                     xfbml: false, // parse XFBML
                     version: 'v2.1'
                 });
@@ -379,7 +381,7 @@ $(function() {
 
         render: function() {
             FB.getLoginStatus(function(response) {
-                if (response.status == "connected" && Parse.User.current() && Parse.User.current().get("authData").facebook.id === response.authResponse.userID) {
+                if (response.status === "connected" && Parse.User.current() && Parse.User.current().get("authData").facebook.id === response.authResponse.userID) {
                     new MainView();
                 } else {
                     Parse.User.logOut();
@@ -393,5 +395,5 @@ $(function() {
     //not yet implemented - will be used when app has multiple pages
 
     //Start the App
-    new AppView;
+    new AppView();
 });

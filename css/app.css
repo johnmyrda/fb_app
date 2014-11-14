@@ -2,11 +2,11 @@
 }
 
 #status-update{
-    padding-bottom: 20px;
+	padding-bottom: 20px;
 }
 
 .glue-text{
-	font-family: Roboto;
+	font-family: Roboto, sans-serif;
 	font-size: 40px;
 	font-style: normal;
 	font-weight: 200;
@@ -36,8 +36,8 @@
 }
 
 #desired-activity-textarea{
-    font-size: 14px;
-    padding: 7px 3px;
+	font-size: 14px;
+	padding: 7px 3px;
 	width: 280px;
 	height: 50px;
 	text-align: left;
@@ -45,32 +45,32 @@
 }
 
 .defaultText {
-	width: 300px; 
+	width: 300px;
 }
 
 .defaultTextActive {
 	color: #a1a1a1;
-	font-style: italic; 
+	font-style: italic;
 }
 
 ::-webkit-input-placeholder {
 	color: #a1a1a1;
-	font-style: italic; 
+	font-style: italic;
 }
 
 :-moz-placeholder { /* Firefox 18- */
 	color: #a1a1a1;
-	font-style: italic;  
+	font-style: italic;
 }
 
 ::-moz-placeholder {  /* Firefox 19+ */
 	color: #a1a1a1;
-	font-style: italic; 
+	font-style: italic;
 }
 
-:-ms-input-placeholder {  
+:-ms-input-placeholder {
 	color: #a1a1a1;
-	font-style: italic;  
+	font-style: italic;
 }
 
 
@@ -85,6 +85,10 @@
 	height: 50px;
 }
 
+.app-link{
+	cursor: pointer;
+}
+
 .app-buttons{
 	background-color: #C0C0C0;
 	box-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
@@ -93,7 +97,7 @@
 	border-radius: 6px;
 	border: 1px solid #888888;
 	display: inline-block;
-	padding: 0px;
+	padding: 0;
 	font-weight: 900;
 	font-size: 24px;
 }
@@ -110,16 +114,16 @@
 }
 
 .user-status{
-    margin: 6px;
+	margin: 6px;
 	padding: 6px;
 	text-align: justify;
 	display: block;
 	width: 280px;
-    margin-left: auto;
-    margin-right: auto;
-    overflow: auto;
-    background: #fff;
-    border: 1px solid #d0d1d5;
+	margin-left: auto;
+	margin-right: auto;
+	overflow: auto;
+	background: #fff;
+	border: 1px solid #d0d1d5;
 }
 
 .user-status a:link{
@@ -135,12 +139,12 @@
 }
 
 .user-status-timestamp{
-    float: right;
-    font-size: 12px;
+	float: right;
+	font-size: 12px;
 }
 
 .user-status-timestamp-expired{
-    color: #A0A0A0;
+	color: #A0A0A0;
 }
 
 .profile_picture{

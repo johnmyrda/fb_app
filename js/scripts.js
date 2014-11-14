@@ -5,20 +5,29 @@ $(function() {
     //Initialize Parse App with JavaScript keys
     Parse.initialize(AppKeys.parse.appId, AppKeys.parse.jsKey);
 
+    //initialize facebook as per their api documentation
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
     //Utility Functions
 
     //HTML Escaping Function from https://github.com/janl/mustache.js
     //License used by mustache.js is below:
     /*The MIT License
 
-    Copyright (c) 2009 Chris Wanstrath (Ruby)
-    Copyright (c) 2010-2014 Jan Lehnardt (JavaScript)
+     Copyright (c) 2009 Chris Wanstrath (Ruby)
+     Copyright (c) 2010-2014 Jan Lehnardt (JavaScript)
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+     The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
     var entityMap = {
         "&": "&amp;",
         "<": "&lt;",
@@ -73,8 +82,9 @@ $(function() {
             }
         },
 
+        //
         getExpirationTime: function() {
-            var expirationDate = new Date(this.get("statusUpdatedAt").getTime() + this.get("hoursFree") * 60 * 60 * 1000);
+            var expirationDate = new Date(this.get("statusUpdatedAt").getTime() + this.get("hoursFree") * 3600000);//60 * 60 * 1000 = 3600000
             return expirationDate;
         }
     });
@@ -112,50 +122,6 @@ $(function() {
     });
 
     //Views
-    var LogInView = Parse.View.extend({
-        events: {
-            "click #loginButton": "logIn"
-        },
-
-        el: "#global_container",
-
-        initialize: function() {
-            _.bindAll(this, "logIn");
-            this.render();
-        },
-
-        logIn: function() {
-            var self = this;
-            Parse.FacebookUtils.logIn("user_friends", {
-                success: function(user) {
-                    Parse.User.current().save().then(function() {
-                        return Parse.Cloud.run("initUser", {});
-                    }).then(function() {
-                        return Parse.User.current().fetch({});
-                    }).then(function() {
-                        new MainView();
-                        self.undelegateEvents();
-                        //delete self; //I need to figure out how to do backbone memory management properly. This comment intentionally left long and obnoxious.
-                        return;
-                    }, function(error) {
-                        console.log(error);
-                    });
-                },
-                error: function(user, error) {
-                    console.log("User cancelled the Facebook login or did not fully authorize.");
-                }
-            });
-
-            return false;
-        },
-
-        render: function() {
-            $("#header .content_container").html(_.template($("#login-header-template").html()));
-            $("#main .content_container").html(_.template($("#login-main-template").html()));
-            //this.delegateEvents();
-        }
-    });
-
     var statusUpdateView = Parse.View.extend({
         events: {
             "click .plusMinusButtons": "alterFreeTime",
@@ -330,11 +296,8 @@ $(function() {
 
 
     var MainView = Parse.View.extend({
-        events: {
-            "click #logoutButton": "logOut"
-        },
 
-        el: "#global_container",
+        el: "#main",
 
         initialize: function() {
             var self = this;
@@ -346,54 +309,246 @@ $(function() {
                     collection: self.friendStatuses
                 });
             });
-            this.render();
-        },
-
-        logOut: function() {
-            Parse.User.logOut();
-            new LogInView();
-            this.undelegateEvents();
-            //delete this;//I need to figure out how to do backbone memory management properly. This comment intentionally left long and obnoxious.
+            //this.render();
         },
 
         render: function() {
-            $("#header .content_container").html(_.template($("#app-header-template").html()));
+            //this.$(".content_container").html(_.template($("#app-header-template").html()));
             //this.delegateEvents();
         }
     });
 
+    var HeaderView = Parse.View.extend({
+
+        events: {
+            "click #logoutButton": "logOut"
+        },
+
+        el: "#header",
+
+        initialize: function () {
+            this.render();
+        },
+
+        render: function () {
+            this.$(".content_container").html(_.template($("#app-header-template").html()));
+        },
+
+        logOut: function () {
+            state.logOut();
+        }
+
+    });
+
+    var LoginHeaderView = Parse.View.extend({
+
+        events: {
+            "click #loginButton": "logIn"
+        },
+
+        el: "#header",
+
+        initialize: function(){
+            this.render();
+        },
+
+        render: function() {
+            this.$(".content_container").html(_.template($("#login-header-template").html()));
+        },
+
+        logIn: function() {
+            var self = this;
+            Parse.FacebookUtils.logIn("user_friends", {
+                success: function(user) {
+                    Parse.User.current().save().then(function() {
+                        return Parse.Cloud.run("initUser", {});
+                    }).then(function() {
+                        return Parse.User.current().fetch({});
+                    }).then(function() {
+                        state.set("loginStatus", true);
+                        //self.undelegateEvents();
+                        //delete self; //I need to figure out how to do backbone memory management properly. This comment intentionally left long and obnoxious.
+                        return;
+                    }, function(error) {
+                        console.log(error);
+                    });
+                },
+                error: function(user, error) {
+                    console.log("User cancelled the Facebook login or did not fully authorize.");
+                }
+            });
+
+            return false;
+        }
+    });
+
+    var LoginMainView = Parse.View.extend({
+        el: "#main",
+
+        initialize: function() {
+            this.render();
+        },
+
+        render: function() {
+            this.$(".content_container").html(_.template($("#login-main-template").html()));
+        }
+    });
+
+    var DevView = Parse.View.extend({
+        el: "#main",
+
+        initialize: function() {
+            this.render();
+        },
+
+        render: function() {
+            this.$(".content_container").html(_.template($("#dev-template").html()));
+        }
+    });
+
+    var SettingsView = Parse.View.extend({
+        el: "#main",
+
+        initialize: function() {
+            this.render();
+        },
+
+        render: function() {
+            this.$(".content_container").html(_.template($("#settings-template").html()));
+        }
+    });
+
+    var Error404View = Parse.View.extend({
+        el: "#main",
+
+        initialize: function() {
+            this.render();
+        },
+
+        render: function() {
+            this.$(".content_container").html(_.template($("#error-404-template").html()));
+        }
+    });
+
     var AppView = Parse.View.extend({
+
         // Instead of generating a new element, bind to the existing skeleton of
         // the App already present in the HTML.
         el: $("#global_container"),
 
+        events: {
+        },
+
         initialize: function() {
-            var self = this;
-            window.fbAsyncInit = function() {
-                Parse.FacebookUtils.init({
-                    appId: AppKeys.facebook.appId, // App ID
-                    xfbml: false, // parse XFBML
-                    version: 'v2.1'
-                });
-                self.render();
-            };
+            this.options.subHeader = this.options.subHeader || HeaderView;
+            this.render();
         },
 
         render: function() {
-            FB.getLoginStatus(function(response) {
-                if (response.status === "connected" && Parse.User.current() && Parse.User.current().get("authData").facebook.id === response.authResponse.userID) {
-                    new MainView();
-                } else {
-                    Parse.User.logOut();
-                    new LogInView();
-                }
-            });
+            new this.options.subHeader();
+            new this.options.subView();
+        }
+
+    });
+
+    var AppState = Parse.Object.extend("AppState", {
+
+        defaults:{
+            loginStatus: false //True if user is logged in, false if not
+        },
+
+        logOut: function(){
+            console.log(this.get("loginStatus"));
+            Parse.User.logOut();
+            this.set({"loginStatus": false});
         }
     });
 
     //Router
-    //not yet implemented - will be used when app has multiple pages
+    var AppRouter = Parse.Router.extend({
+
+        routes: {
+            "": "home",
+            //"login":"login",
+            "dev": "dev",
+            "settings": "settings",
+            "*404": "error404"
+        },
+
+        initialize: function(){
+            this.model = state;
+            this.model.on("change:loginStatus", this.nav, this);
+        },
+
+        nav: function(){
+            console.log("router.nav");
+            if (state.get("loginStatus") === false){
+                this.login();
+            } else {
+                this.home();
+            }
+        },
+
+        home: function(){
+            console.log("home-route");
+            new AppView({subView : MainView});
+        },
+
+        login: function(){
+            new AppView({subView: LoginMainView, subHeader: LoginHeaderView});
+        },
+
+        dev: function(){
+            new AppView({subView : DevView});
+        },
+
+        settings: function() {
+            new AppView({subView : SettingsView});
+        },
+
+        error404: function(){
+            new AppView({subView : Error404View});
+        },
+
+        route: function(route, name, callback){
+
+            //Parse.Router.prototype.route(route, name, callback);
+            var login = this.login;
+            var new_callback = function(){
+                console.log(name);
+                if (state.get("loginStatus") === false){
+                    return login();
+                } else {
+                    return callback();
+                }
+            };
+            //console.log(callback);
+            return Parse.Router.prototype.route(route, name, new_callback);
+        }
+
+    });
+
 
     //Start the App
-    new AppView();
+    var state = new AppState();
+    var router;
+
+    window.fbAsyncInit = function() {
+        Parse.FacebookUtils.init({
+            appId: AppKeys.facebook.appId, // App ID
+            xfbml: false, // parse XFBML
+            version: 'v2.1'
+        });
+
+        FB.getLoginStatus(function(response) {
+            if (response.status === "connected" && Parse.User.current() && Parse.User.current().get("authData").facebook.id === response.authResponse.userID) {
+                state.set("loginStatus", true);
+            } else {
+                state.logOut();
+            }
+            router = new AppRouter();
+            Parse.history.start({pushState: true});
+        });
+    };
+
 });

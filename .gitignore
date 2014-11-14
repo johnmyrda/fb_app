@@ -3,3 +3,6 @@ robots.txt
 
 #file containing application keys and ids
 js/keys.js
+
+#JetBrains IDE Files
+.idea/*

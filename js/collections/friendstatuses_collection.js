@@ -14,8 +14,12 @@ define([
         },
 
         initialize: function () {
-            var self = this;
             this.clock = new ClockModel();
+            this.FBQuery();
+        },
+
+        FBQuery: function(){
+            var self = this;
             FB.api("/me/friends?fields=id", function (response) {
                 if (response.data) {
                     var fb_friend_ids = [];

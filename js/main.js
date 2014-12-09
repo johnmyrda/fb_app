@@ -2,20 +2,27 @@
 requirejs.config({
     "baseUrl": "js",
     "paths": {
-        jquery: ["//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min", "libraries/jquery-1.11.1"],
-        underscore: ["//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min","libraries/underscore"],
-        parse: ["http://www.parsecdn.com/js/parse-1.3.1.min","libraries/parse-1.3.1"],
-        facebook: ["//connect.facebook.net/en_US/all","libraries/facebook"]
+        "jquery": "libraries/jquery-1.11.1",//"//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min"
+        "underscore": "libraries/underscore",//"//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min"
+        "parse": "libraries/parse-1.3.1",//"http://www.parsecdn.com/js/parse-1.3.1.min"
+        "facebook": "libraries/facebook"//"//connect.facebook.net/en_US/sdk"
     },
     shim: {
         "parse": {
-            exports: "Parse"
+            exports: "Parse",
+            deps: ["facebook", "jquery"]
         },
         "underscore": {
             exports: "_"
         },
         "facebook":{
             exports: "FB"
+        },
+        "lib":{
+            deps: ["facebook", "parse"]
+        },
+        "app":{
+            "deps": ["lib"]
         }
     }
     //urlArgs: "bust=" + (new Date()).getTime()

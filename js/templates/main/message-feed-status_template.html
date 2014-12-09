@@ -1,0 +1,7 @@
+<a href="https://facebook.com/<%=fb_id%>" target="_blank">
+    <img class="profile_picture" src="http://graph.facebook.com/<%=fb_id%>/picture?type=square" title="<%=fb_name%>">
+</a>
+<a href="https://facebook.com/<%=fb_id%>" target="_blank"><%=fb_name%></a> said "I<%= desiredActivity === "" ? "'m up for whatever\"." : " want to " + desiredActivity + "\"."%>
+<br>
+<% if(fb_chatLink) { %>Chat with <%=fb_firstName%>! <% } %>
+<%= timestampHTML %>

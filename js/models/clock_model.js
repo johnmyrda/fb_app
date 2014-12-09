@@ -22,6 +22,8 @@ define([
                 self.set("time", new Date(self.get("time").getTime() + interval));
             }, interval);
         }
+    },{//classProps
+
     });
 
     return ClockModel;

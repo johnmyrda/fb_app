@@ -1,29 +1,33 @@
 define([
     "collections/friendstatuses_collection",
     "views/main/statusupdate_view",
+    "views/main/messagefeed_view",
     "parse"
-],function(FriendStatuses, StatusUpdateView){
+],function(FriendStatuses, StatusUpdateView, MessageFeedView){
 
     var MainView = Parse.View.extend({
-
-        el: "#main",
 
         initialize: function () {
             var self = this;
             this.friendStatuses = new FriendStatuses();
-            this.UserInfo = Parse.User.current().get("UserInfo");
-            this.UserInfo.fetch({}).then(function () {
-                self.status_update = new StatusUpdateView({
-                    model: self.UserInfo,
-                    collection: self.friendStatuses
-                });
+            Parse.User.current().get("UserInfo").fetch( {
+                success: function(object){
+                    console.log(object);
+                    self.UserInfo = object;
+                    self.statusUpdateView = new StatusUpdateView({model: self.UserInfo, collection: self.friendStatuses});
+                    self.messageFeedView = new MessageFeedView({collection: self.friendStatuses});
+                    self.render();
+                },
+                error: function(object, error){
+                    console.log(error);
+                }
             });
-            //this.render();
         },
 
         render: function () {
-            //this.$(".content_container").html(_.template($("#app-header-template").html()));
-            //this.delegateEvents();
+            this.$el.append(this.statusUpdateView.render().$el);
+            this.$el.append(this.messageFeedView.render().$el);
+            return this;
         }
     });
 

@@ -1,18 +1,19 @@
 define([
+    "text!templates/settings/settings_template.html",
     "parse",
     "jquery",
     "underscore"
-],function(){
+],function(settingsTemplate){
 
-        var SettingsView = Parse.View.extend({
-        el: "#main",
+    var SettingsView = Parse.View.extend({
 
         initialize: function () {
             this.render();
         },
 
         render: function () {
-            this.$(".content_container").html(_.template($("#settings-template").html()));
+            this.$el.html(_.template(settingsTemplate));
+            return this;
         }
     });
 

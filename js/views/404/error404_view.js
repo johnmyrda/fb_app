@@ -1,18 +1,19 @@
 define([
+    "text!templates/404/error-404-template.html",
     "parse",
     "jquery",
     "underscore"
-],function(){
+],function(error404Template){
 
     var Error404View = Parse.View.extend({
-        el: "#main",
 
         initialize: function () {
             this.render();
         },
 
         render: function () {
-            this.$(".content_container").html(_.template($("#error-404-template").html()));
+            this.$el.html(_.template(error404Template));
+            return this;
         }
     });
 

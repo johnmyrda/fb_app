@@ -1,18 +1,19 @@
 define([
+    "text!templates/dev/dev_template.html",
     "parse",
     "jquery",
     "underscore"
-],function(){
+],function(devTemplate){
 
     var DevView = Parse.View.extend({
-        el: "#main",
 
         initialize: function () {
             this.render();
         },
 
         render: function () {
-            this.$(".content_container").html(_.template($("#dev-template").html()));
+            this.$el.html(_.template(devTemplate));
+            return this;
         }
     });
 

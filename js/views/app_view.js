@@ -1,5 +1,5 @@
 define([
-    "views/main/header_view",
+    "views/header/header_view",
     "parse",
     "jquery"
 ],function(HeaderView){
@@ -8,18 +8,31 @@ define([
 
         // Instead of generating a new element, bind to the existing skeleton of
         // the App already present in the HTML.
-        el: $("#global_container"),
+        el: "#global_container",
 
         events: {},
 
         initialize: function () {
-            this.options.subHeader = this.options.subHeader || HeaderView;
-            this.render();
+            this.headerElement = $("#header");
+            this.HeaderView = new HeaderView({className: "content_container"});
+            this.headerElement.append(this.HeaderView.$el);
+
+            this.mainElement = $("#main");
+            this.MainView = false;
         },
 
         render: function () {
-            new this.options.subHeader();
-            new this.options.subView();
+        },
+
+        gotoView: function(view){
+            //console.log(view);
+            if(this.MainView){
+                this.MainView.remove();
+                this.MainView.unbind();
+            }
+            this.MainView = new view({className: "content_container"});
+            this.mainElement.append(this.MainView.$el);
+
         }
 
     });

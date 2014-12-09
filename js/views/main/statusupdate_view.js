@@ -1,9 +1,10 @@
 define([
-    "views/main/messagefeed_view",
+    "text!templates/main/app-main_template.html",
+    "text!templates/main/hours-selector_template.html",
     "parse",
     "jquery",
     "underscore"
-],function(MessageFeedView, Parse, $, _){
+],function(appMainTemplate, hoursSelectorTemplate, Parse, $, _){
 
     var StatusUpdateView = Parse.View.extend({
         events: {
@@ -13,17 +14,12 @@ define([
             "blur #desired-activity-textarea": "cacheStatus"
         },
 
-        template: _.template($("#app-main-template").html()),
-        subtemplate: _.template($("#hours_selector-template").html()),
+        template: _.template(appMainTemplate),
+        subtemplate: _.template(hoursSelectorTemplate),
 
         id: "findFreeFriends",
 
         initialize: function () {
-            this.model.setDefaults();
-            this.render();
-            this.message_feed = new MessageFeedView({
-                collection: this.collection
-            });
             this.model.on("change:hoursFree", this.renderHoursSelector, this);
         },
 
@@ -47,7 +43,7 @@ define([
         saveStatus: function () {
             this.cacheStatus();
             var self = this;
-            self.$("#bored_button").attr("disabled", "disabled");
+            self.$el.find("#bored_button").attr("disabled", "disabled");
             this.model.save({
                 success: function () {
                     self.$("#bored_button").removeAttr("disabled");
@@ -77,16 +73,23 @@ define([
         },
 
         render: function () {
-            $(this.el).html(this.template());
-            $("#main .content_container").html(this.el);
+            var self = this;
+            //console.log(this.el);
+            this.$el.html(this.template);
             require(["plugins/jquery.elastic.min"], function(){
-                $("#desired-activity-textarea").elastic();
+                self.$el.find("#desired-activity-textarea").elastic();
             });
-            $("#hours_selector").html(this.subtemplate(this.model.toJSON()));
+            this.renderHoursSelector();
+            return this;
         },
 
         renderHoursSelector: function () {
-            $("#hours_selector").html(this.subtemplate(this.model.toJSON()));
+            var hoursSelectorHTML = this.subtemplate(this.model.toJSON());
+            if(this.$hoursSelector){
+                this.$hoursSelector.html(hoursSelectorHTML);
+            } else {
+                this.$hoursSelector = this.$el.find("#hours_selector").html(hoursSelectorHTML);
+            }
         }
     });
 

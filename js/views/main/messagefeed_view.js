@@ -1,13 +1,12 @@
 define([
     "views/main/status_view",
-    "parse",
-    "jquery"
-], function(StatusView, Parse, $){
+    "parse"
+], function(StatusView, Parse){
 
     var MessageFeedView = Parse.View.extend({
         events: {},
 
-        el: $("#message_feed"),
+        id: "#message_feed",
 
         initialize: function () {
             this.render();
@@ -16,15 +15,16 @@ define([
         },
         //functions
         render: function () {
-            $("#message_feed").html("");
-            this.collection.each(this.addOne);
+            this.$el.html("");
+            this.collection.each(this.addOne, this);
+            return this;
         },
 
         addOne: function (user) {
             var view = new StatusView({
                 model: user
             });
-            $("#message_feed").append(view.render());
+            this.$el.append(view.render());
         }
     });
 

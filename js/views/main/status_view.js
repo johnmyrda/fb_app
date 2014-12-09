@@ -1,12 +1,13 @@
 define([
+    "text!templates/main/message-feed-status_template.html",
     "parse",
     "jquery",
     "underscore"
-],function(Parse, $, _){
+],function(messageFeedStatusTemplate,Parse, $, _){
 
     var StatusView = Parse.View.extend({
 
-        template: _.template($("#message_feed-status-template").html()),
+        template: _.template(messageFeedStatusTemplate),
 
         events: {},
 
@@ -63,7 +64,7 @@ define([
                 this.modelJSON["fb_name"] = "You";
             }
             //console.log(modelJSON);
-            $(this.el).html(this.template(this.modelJSON));
+            this.$el.html(this.template(this.modelJSON));
             return this.el;
         }
     });

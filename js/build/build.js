@@ -16,25 +16,10 @@
 //
 
 ({
-    paths: {
-        jquery: "empty:",
-        underscore: "empty:",
-        parse: "empty:",
-        facebook: "empty:"
-    },
-    shim: {
-        "parse": {
-            exports: "Parse"
-        },
-        "underscore": {
-            exports: "_"
-        },
-        "facebook":{
-            exports: "FB"
-        }
-    },
+    mainConfigFile : "main.js",
     baseUrl : "../",
     name: "main",
     out: "main.js",
-    removeCombined: true
+    removeCombined: true,
+    findNestedDependencies: true
 })

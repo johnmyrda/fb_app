@@ -1,11 +1,21 @@
-define(["parse",
+define(["parse", "keys",
          "models/state_model", "router"],
-function(Parse, StateModel, AppRouter) {
-        "use strict";
+function(Parse, AppKeys, StateModel, AppRouter) {
+    "use strict";
 
-        //Start the App
-        new AppRouter();
-        StateModel.determineLoginStatus(function(){
-            Parse.history.start({pushState: true});
-        });
+    //Initialize Parse SDK with JavaScript keys
+    Parse.initialize(AppKeys.parse.appId, AppKeys.parse.jsKey);
+
+    //Initialize Facebook SDK
+    Parse.FacebookUtils.init({
+        appId: AppKeys.facebook.appId,
+        xfbml: false, // parse XFBML
+        version: 'v2.1'
+    });
+
+    //Start the App
+    new AppRouter();
+    StateModel.determineLoginStatus(function(){
+        Parse.history.start({pushState: true});
+    });
 });

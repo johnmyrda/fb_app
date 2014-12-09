@@ -1,6 +1,6 @@
 //Configuration for requirejs
 requirejs.config({
-    "baseUrl": "js",
+    //"baseUrl": "js",
     "paths": {
         "jquery": "libraries/jquery-1.11.1",//"//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min"
         "underscore": "libraries/underscore",//"//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min"
@@ -18,11 +18,8 @@ requirejs.config({
         "facebook":{
             exports: "FB"
         },
-        "lib":{
-            deps: ["facebook", "parse"]
-        },
         "app":{
-            "deps": ["lib"]
+            "deps": ["facebook, parse"]
         }
     }
     //urlArgs: "bust=" + (new Date()).getTime()

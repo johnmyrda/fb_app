@@ -19,6 +19,8 @@ define([
             var expirationDate = new Date(this.get("statusUpdatedAt").getTime() + this.get("hoursFree") * 3600000);//60 * 60 * 1000 = 3600000
             return expirationDate;
         }
+    },{//classProps
+
     });
 
     return UserInfoModel;

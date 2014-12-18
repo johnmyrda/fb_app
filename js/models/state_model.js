@@ -16,7 +16,6 @@ define([
             var self = this;
             //FB.getLoginStatus is Async. Be Careful.
             FB.getLoginStatus(function (response) {
-                console.log("fbbs");
                 if (response.status === "connected" && Parse.User.current() && Parse.User.current().get("authData").facebook.id === response.authResponse.userID) {
                     self.set("loginStatus", true);
                 } else {

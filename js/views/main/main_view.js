@@ -12,7 +12,7 @@ define([
             this.friendStatuses = new FriendStatuses();
             Parse.User.current().get("UserInfo").fetch( {
                 success: function(object){
-                    console.log(object);
+                    //console.log(object);
                     self.UserInfo = object;
                     self.statusUpdateView = new StatusUpdateView({model: self.UserInfo, collection: self.friendStatuses});
                     self.messageFeedView = new MessageFeedView({collection: self.friendStatuses});

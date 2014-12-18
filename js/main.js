@@ -19,7 +19,7 @@ requirejs.config({
             exports: "FB"
         },
         "app":{
-            "deps": ["facebook, parse"]
+            "deps": ["facebook", "parse"]
         }
     }
     //urlArgs: "bust=" + (new Date()).getTime()
